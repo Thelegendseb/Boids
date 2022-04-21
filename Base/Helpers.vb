@@ -24,17 +24,25 @@
         Return Math.Sqrt((Math.Abs(X2 - X1) ^ 2) + (Math.Abs(Y2 - Y1) ^ 2))
     End Function
 
-    'write a function that takes in a list of boids, and finds the midpoint of the flock
+    'function that takes in a list of boids, and finds the midpoint of the flock
     Public Shared Function MidPoint(Boids As List(Of Boid)) As Point
         Dim X As Integer = 0
         Dim Y As Integer = 0
 
         For Each B In Boids
-            X += B.x
-            Y += B.y
+            X += B.Movement.x
+            Y += B.Movement.y
         Next
 
         Return New Point(X / Boids.Count, Y / Boids.Count)
+    End Function
+
+    ' a function that calculates the angle in radians between two points
+    Public Shared Function AngleBetween(x1 As Single, y1 As Single, x2 As Single, y2 As Single) As Single
+        Dim X As Integer = x2 - x1
+        Dim Y As Integer = y2 - y1
+
+        Return Math.Atan2(Y, X)
     End Function
 
 End Class

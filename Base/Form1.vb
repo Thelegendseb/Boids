@@ -27,13 +27,13 @@
 
     'INITS===================================
     Private Sub FormInit()
-        Me.Text = "Boids"
-
         'Me.WindowState = WindowState.Maximized
         Me.Size = New Size(InputBox("Width of Window"), InputBox("Height of Window"))
 
+        Me.Text = "Boids"
+        Me.MaximizeBox = False
+        Me.BackColor = GameGraphics.BackgroundColor
         Me.CenterToScreen()
-        Cursor.Hide()
     End Sub
     Private Sub ScreenInit()
         Screen = New PictureBox With {
@@ -53,6 +53,10 @@
         If e.KeyCode = Keys.Escape Then
             Application.Exit()
         End If
+    End Sub
+
+    Private Sub Form1_Resize(sender As Object, e As EventArgs) Handles Me.ResizeEnd
+        Me.ClientSize = Screen.Size
     End Sub
 
 End Class

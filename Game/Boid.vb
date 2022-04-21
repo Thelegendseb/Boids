@@ -1,23 +1,17 @@
 ﻿Public Class Boid
 
-    Public x, y As Integer
-    Public theta As Single
     Public Neighbors As New List(Of Boid)
     Public ID As Integer
     Public Color As Color
 
-    Public Shared BoundingArea As Rectangle
+    Public Movement As New BoidMovement
 
-    Public Shared ReadOnly SteeringStrength As Single = 0.04
-    Public Shared ReadOnly FOV As Single = (Math.PI / 180) * 270
-    Public Shared ReadOnly Radius As Integer = 100
-    Public Shared ReadOnly Speed As Integer = 7
+    'Put the stats in DNA-->Characteriscs
 
-    Private Shared ReadOnly Leeway As Integer = 20
     Sub New(x As Integer, y As Integer, theta As Single, ID As Integer, Col As Color)
-        Me.x = x
-        Me.y = y
-        Me.theta = theta
+        Me.Movement.x = x
+        Me.Movement.y = y
+        Me.Movement.theta = theta
         Me.ID = ID
         Me.Color = Col
     End Sub
@@ -25,6 +19,14 @@
         Move()
 
         GetNeighbors(CurrentBoids)
+
+        'Make Mouse Position Act as Boid - in effecting others
+
+        'Predator Boid
+
+        'Generational Learning
+        'Learning Simulation - Boids will learn to avoid predators and last long by defined characteristics 
+        'that effect their behaviour {avoidance, alignment, cohesion}
 
         Seperation()
         Allignment()
@@ -42,20 +44,20 @@
 
             For Each b In Me.Neighbors
 
-                Select Case Helpers.DistanceBetween(Me.x, Me.y, b.x, b.y)
-                    Case < (Radius / 5) * 1
+                Select Case Helpers.DistanceBetween(Me.Movement.x, Me.Movement.y, b.Movement.x, b.Movement.y)
+                    Case < (BoidStats.Radius / 5) * 1
                         HowClose = 5
-                    Case < (Radius / 5) * 2
+                    Case < (BoidStats.Radius / 5) * 2
                         HowClose = 4
-                    Case < (Radius / 5) * 3
+                    Case < (BoidStats.Radius / 5) * 3
                         HowClose = 3
-                    Case < (Radius / 5) * 4
+                    Case < (BoidStats.Radius / 5) * 4
                         HowClose = 2
-                    Case < (Radius / 5) * 5
+                    Case < (BoidStats.Radius / 5) * 5
                         HowClose = 1
                 End Select
 
-                Me.theta -= Helpers.Map(b.theta, 0, Math.PI * 2, -(HowClose * SteeringStrength), HowClose * SteeringStrength)
+                Me.Movement.theta -= Helpers.Map(b.Movement.theta, 0, Math.PI * 2, -(HowClose * BoidStats.SteeringStrength), HowClose * BoidStats.SteeringStrength)
 
             Next
         End If
@@ -68,12 +70,12 @@
 
             Dim ThetaAvr As Single
             For Each b In Me.Neighbors
-                ThetaAvr += b.theta
+                ThetaAvr += b.Movement.theta
             Next
             ThetaAvr /= Me.Neighbors.Count
 
-            ' Me.theta -= Helpers.Map(ThetaAvr, 0, Math.PI * 2, -(SteeringStrength), SteeringStrength)
-            Me.theta = ThetaAvr
+            Me.Movement.theta -= Helpers.Map(ThetaAvr, 0, Math.PI * 2, -(BoidStats.SteeringStrength), BoidStats.SteeringStrength)
+            'Me.theta = ThetaAvr
 
         End If
 
@@ -84,6 +86,9 @@
 
             Dim Midpoint As Point = Helpers.MidPoint(Me.Neighbors)
 
+            'steer towards the midpoint
+            ' Me.theta = Helpers.AngleBetween(Midpoint.X, Midpoint.Y, Me.x, Me.y)
+
 
         End If
     End Sub
@@ -91,31 +96,32 @@
 
     '============================================================
     Private Sub GetNeighbors(BoidList As List(Of Boid))
-        Me.Neighbors = BoidList.FindAll(Function(b) Helpers.DistanceBetween(Me.x, Me.y, b.x, b.y) < Radius And Me.ID <> b.ID)
+        Me.Neighbors = BoidList.FindAll(Function(b) Helpers.DistanceBetween(Me.Movement.x, Me.Movement.y,
+                                                               b.Movement.x, b.Movement.y) < BoidStats.Radius And Me.ID <> b.ID)
     End Sub
 
     Private Sub Move()
-        Me.x += Math.Cos(theta) * Speed
-        Me.y += Math.Sin(theta) * Speed
+        Me.Movement.x += Math.Cos(Movement.theta) * BoidStats.Speed
+        Me.Movement.y += Math.Sin(Movement.theta) * BoidStats.Speed
     End Sub
 
     Private Sub BoundCheck()
-        If Me.x < BoundingArea.X - Leeway Then Me.x = BoundingArea.Width + Leeway
-        If Me.x > BoundingArea.Width + Leeway Then Me.x = BoundingArea.X - Leeway
-        If Me.y < BoundingArea.Y - Leeway Then Me.y = BoundingArea.Height + Leeway
-        If Me.y > BoundingArea.Height + Leeway Then Me.y = BoundingArea.Y - Leeway
+        If Me.Movement.x < BoidStats.BoundingArea.X - BoidStats.Leeway Then Me.Movement.x = BoidStats.BoundingArea.Width + BoidStats.Leeway
+        If Me.Movement.x > BoidStats.BoundingArea.Width + BoidStats.Leeway Then Me.Movement.x = BoidStats.BoundingArea.X - BoidStats.Leeway
+        If Me.Movement.y < BoidStats.BoundingArea.Y - BoidStats.Leeway Then Me.Movement.y = BoidStats.BoundingArea.Height + BoidStats.Leeway
+        If Me.Movement.y > BoidStats.BoundingArea.Height + BoidStats.Leeway Then Me.Movement.y = BoidStats.BoundingArea.Y - BoidStats.Leeway
     End Sub
 
     Private Sub ThetaCheck()
-        If Me.theta > Math.PI * 2 Then
-            Me.theta -= Math.PI * 2
-        ElseIf Me.theta < 0 Then
-            Me.theta += Math.PI * 2
+        If Me.Movement.theta > Math.PI * 2 Then
+            Me.Movement.theta -= Math.PI * 2
+        ElseIf Me.Movement.theta < 0 Then
+            Me.Movement.theta += Math.PI * 2
         End If
     End Sub
 
     Public Shared Sub SetBoidBounds(R As Rectangle)
-        BoundingArea = R
+        BoidStats.BoundingArea = R
     End Sub
 
     Public Shared Function Generate(num As Integer, Optional seed As Integer = vbNull) As List(Of Boid)
@@ -133,8 +139,8 @@
         Dim C As Color
         For i = 0 To num - 1
 
-            x = Randomiser.Next(BoundingArea.X, BoundingArea.Width)
-            y = Randomiser.Next(BoundingArea.Y, BoundingArea.Height)
+            x = Randomiser.Next(BoidStats.BoundingArea.X, BoidStats.BoundingArea.Width)
+            y = Randomiser.Next(BoidStats.BoundingArea.Y, BoidStats.BoundingArea.Height)
             theta = Helpers.Map(Randomiser.Next(0, 1000), 0, 1000, 0, 2 * Math.PI)
             If i Mod 2 = 0 Then
                 C = Color.FromArgb(97, 138, 196)
@@ -150,7 +156,8 @@
     End Function
 
     Public Function OutOfBounds() As Boolean 'Out of bounds is defined as being outside the bounding area
-        Return (Me.x < BoundingArea.X Or Me.x > BoundingArea.Width Or Me.y < BoundingArea.Y Or Me.y > BoundingArea.Height)
+        Return (Me.Movement.x < BoidStats.BoundingArea.X Or Me.Movement.x > BoidStats.BoundingArea.Width Or
+                Me.Movement.y < BoidStats.BoundingArea.Y Or Me.Movement.y > BoidStats.BoundingArea.Height)
     End Function
 
 End Class
