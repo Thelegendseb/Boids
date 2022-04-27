@@ -6,13 +6,16 @@
 
     Public Boids As List(Of Boid)
 
-    Public FPS As Integer = 60
+    Public Speed As Integer = 120
 
-    Sub New(ScreenSize As Size)
+    Public Latency As Double
+    Private LatencyCalc As New Stopwatch
 
-        Me.SessionGraphics = New GameGraphics(ScreenSize)
+    Sub New(SessionSize As Size)
 
-        SetBoundingArea(ScreenSize)
+        Me.SessionGraphics = New GameGraphics(SessionSize)
+
+        SetBoundingArea(SessionSize)
 
         Boid.SetBoidBounds(Me.BoundingArea)
 
@@ -21,11 +24,12 @@
     End Sub
 
     Public Sub Update()
+        LatencyCalc.Restart()
+
         UpdateBoids()
-
-
-
         Me.SessionGraphics.Draw(Me)
+
+        Me.Latency = LatencyCalc.ElapsedMilliseconds
     End Sub
 
     '================================================

@@ -5,6 +5,7 @@
     Private Screen As PictureBox
 
     Private CurrentSession As Session
+
     Private Sub Form1_Load(sender As Object, e As EventArgs) Handles MyBase.Load
         FormInit()
         ScreenInit()
@@ -27,8 +28,8 @@
 
     'INITS===================================
     Private Sub FormInit()
-        'Me.WindowState = WindowState.Maximized
-        Me.Size = New Size(InputBox("Width of Window"), InputBox("Height of Window"))
+        Me.WindowState = WindowState.Maximized
+        ' Me.Size = New Size(InputBox("Width of Window"), InputBox("Height of Window"))
 
         Me.Text = "Boids"
         Me.MaximizeBox = False
@@ -44,7 +45,7 @@
         Me.Controls.Add(Screen)
     End Sub
     Private Sub TimeInit()
-        Time.Interval = Int(1000 / CurrentSession.FPS)
+        Time.Interval = Int(1000 / CurrentSession.Speed)
         Time.Start()
     End Sub
 
@@ -52,6 +53,34 @@
     Private Sub Form1_KeyDown(sender As Object, e As KeyEventArgs) Handles Me.KeyDown
         If e.KeyCode = Keys.Escape Then
             Application.Exit()
+        ElseIf e.KeyCode = Keys.Space Then
+            If Time.Enabled = True Then
+                Time.Stop()
+                Me.CurrentSession.SessionGraphics.DrawPause("PAUSE ⏸", 30, 30, 25)
+                Me.Render()
+            Else
+                Time.Start()
+            End If
+        ElseIf e.KeyCode = Keys.Multiply Then
+            If Me.CurrentSession.SessionGraphics.OverlayState = Me.CurrentSession.SessionGraphics.GraphicsOverlayPreset.None Then
+                Me.CurrentSession.SessionGraphics.OverlayState = Me.CurrentSession.SessionGraphics.GraphicsOverlayPreset.Statistics
+            Else
+                Me.CurrentSession.SessionGraphics.OverlayState = Me.CurrentSession.SessionGraphics.GraphicsOverlayPreset.None
+            End If
+            '----------------------------------------
+
+        ElseIf e.KeyCode = Keys.Up Then
+            If Me.CurrentSession.SessionGraphics.GraphicsState >= [Enum].GetValues(GetType(GameGraphics.GraphicsStatePreset)).Length - 1 Then
+                Me.CurrentSession.SessionGraphics.GraphicsState = 0
+            Else
+                Me.CurrentSession.SessionGraphics.GraphicsState += 1
+            End If
+        ElseIf e.KeyCode = Keys.Down Then
+            If Me.CurrentSession.SessionGraphics.GraphicsState <= 0 Then
+                Me.CurrentSession.SessionGraphics.GraphicsState = [Enum].GetValues(GetType(GameGraphics.GraphicsStatePreset)).Length - 2
+            Else
+                Me.CurrentSession.SessionGraphics.GraphicsState -= 1
+            End If
         End If
     End Sub
 

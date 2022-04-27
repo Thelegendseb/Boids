@@ -30,8 +30,8 @@
         Dim Y As Integer = 0
 
         For Each B In Boids
-            X += B.Movement.x
-            Y += B.Movement.y
+            X += B.x
+            Y += B.y
         Next
 
         Return New Point(X / Boids.Count, Y / Boids.Count)
@@ -43,6 +43,13 @@
         Dim Y As Integer = y2 - y1
 
         Return Math.Atan2(Y, X)
+    End Function
+
+    Public Shared Function Difference(ByVal n1 As Double, ByVal n2 As Double) As Double
+        If n1 > n2 Then
+            Return n2 - n1
+        Else : Return n1 - n2
+        End If
     End Function
 
 End Class
